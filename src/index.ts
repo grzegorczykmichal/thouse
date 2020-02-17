@@ -1,17 +1,14 @@
-import express from "express";
+require("dotenv").config();
+
+import express, { Application } from "express";
 import { ApolloServer } from "apollo-server-express";
 import { typeDefs, resolvers } from "./graphql";
+import { connectDatabase } from "./db";
 // import bodyParser from "body-parser";
 
 // import { listings } from "./listings";
 
 const APP_NAME = process.argv[2] || "app";
-const PORT = 9000;
-
-const app = express();
-
-const apollo = new ApolloServer({ typeDefs, resolvers });
-apollo.applyMiddleware({ app, path: "/api" });
 
 // app.use(bodyParser.json());
 
@@ -28,6 +25,23 @@ apollo.applyMiddleware({ app, path: "/api" });
 //   return res.send();
 // });
 
-app.listen(PORT);
+const mount = async (app: Application) => {
+  const db = await connectDatabase();
+  const apollo = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: () => ({
+      db
+    })
+  });
+  apollo.applyMiddleware({ app, path: "/api" });
+  app.listen(process.env.APP_PORT);
+  console.log(
+    `\u001b[31m[${APP_NAME}]\u001b[0m Listening on ${process.env.APP_PORT}`
+  );
 
-console.log(`\u001b[31m[${APP_NAME}]\u001b[0m Listening on ${PORT}`);
+  const ls = await db.listings.find({}).toArray();
+  console.log(ls);
+};
+
+mount(express());
