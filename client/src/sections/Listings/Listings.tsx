@@ -1,5 +1,5 @@
 import React, { useReducer } from "react";
-import { server, useQuery } from "../../lib/api";
+import { useQuery, useMutation } from "../../lib/api";
 import {
   DeleteListingData,
   DeleteListingVariables,
@@ -36,7 +36,11 @@ interface Props {
 }
 
 export const Listings = ({ title = "Listings" }: Props) => {
-  const { data, refetch } = useQuery<ListingsData>(LISTINGS);
+  const { data, refetch, loading, error } = useQuery<ListingsData>(LISTINGS);
+  const [
+    fireDeletion,
+    { loading: deletionLoading, error: deletionError }
+  ] = useMutation<DeleteListingData, DeleteListingVariables>(DELETE_LISTING);
   const listings = data ? data.listings : [];
 
   const [deletionRequests, dispatchDeletionRequest] = useReducer(
@@ -60,18 +64,26 @@ export const Listings = ({ title = "Listings" }: Props) => {
   };
 
   const deleteListing = (id: string) => async () => {
-    await server.fetch<DeleteListingData, DeleteListingVariables>({
-      query: DELETE_LISTING,
-      variables: { id }
-    });
+    await fireDeletion({ id });
     dispatchDeletionRequest({ type: "cancel", payload: id });
     refetch();
   };
 
+  if (loading) {
+    return <h2>Loading ...</h2>;
+  }
+
+  if (error) {
+    return <h2>Something went wrong &#x1f480;</h2>;
+  }
+
+  const deletionLoadingMessage = deletionLoading ? <h4>Deleting ...</h4> : null;
+  const deletionErrormessage = deletionError ? <h4>Err!</h4> : null;
+
   return (
     <div>
       <h2>{title}</h2>
-      {listings.length > 0 ? (
+      {listings.length > 0 && (
         <ul>
           {listings.map(listing => {
             return (
@@ -93,9 +105,9 @@ export const Listings = ({ title = "Listings" }: Props) => {
             );
           })}
         </ul>
-      ) : (
-        <div>loading...</div>
       )}
+      {deletionLoadingMessage}
+      {deletionErrormessage}
     </div>
   );
 };

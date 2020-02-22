@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useReducer } from "react";
+import { useReducer } from "react";
 import { server } from "./server";
 
 interface State<TData> {
@@ -6,6 +6,11 @@ interface State<TData> {
   loading: boolean;
   error: boolean;
 }
+
+type MutationTuple<TData, TVariables> = [
+  (v?: TVariables | undefined) => Promise<void>,
+  State<TData>
+];
 
 type Action<TData> =
   | { type: "FETCH" }
@@ -28,35 +33,33 @@ const reducer = <TData>() => (
   }
 };
 
-export const useQuery = <TData = any>(query: string) => {
+export const useMutation = <TData = any, TVariables = any>(
+  query: string
+): MutationTuple<TData, TVariables> => {
   const [state, dispatch] = useReducer(reducer<TData>(), {
     data: null,
     loading: false,
     error: false
   });
 
-  const fetch = useCallback(() => {
-    const fetchApi = async () => {
-      try {
-        dispatch({ type: "FETCH" });
-        const { data, errors } = await server.fetch<TData>({ query });
+  const fetchApi = async (variables?: TVariables) => {
+    try {
+      dispatch({ type: "FETCH" });
+      const { data, errors } = await server.fetch<TData, TVariables>({
+        query,
+        variables
+      });
 
-        if (errors && errors.length > 0) {
-          throw new Error(errors[0].message);
-        }
-
-        dispatch({ type: "FETCH_SUCCESS", payload: data });
-      } catch (err) {
-        dispatch({ type: "FETCH_ERROR" });
-        console.error(err);
+      if (errors && errors.length > 0) {
+        throw new Error(errors[0].message);
       }
-    };
-    fetchApi();
-  }, [query]);
 
-  useEffect(() => {
-    fetch();
-  }, [fetch]);
+      dispatch({ type: "FETCH_SUCCESS", payload: data });
+    } catch (err) {
+      dispatch({ type: "FETCH_ERROR" });
+      console.error(err);
+    }
+  };
 
-  return { ...state, refetch: fetch };
+  return [fetchApi, state];
 };

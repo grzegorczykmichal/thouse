@@ -1,10 +1,11 @@
 require("dotenv").config();
+import faker from "faker";
 import { connectDatabase } from "../src/db";
 import { Listing } from "../src/lib/types";
 import { ObjectId } from "mongodb";
+console.log("[seed]: Running...");
 const seed = async () => {
   try {
-    console.log("[seed]: Running...");
     const db = await connectDatabase();
     const listings: Listing[] = [
       {
@@ -52,4 +53,38 @@ const seed = async () => {
   }
 };
 
-seed();
+const send = async (listings: Listing[]) => {
+  const db = await connectDatabase();
+  try {
+    db.listings.insertMany(listings);
+  } catch (error) {
+    throw new Error("Failed to seed");
+  }
+};
+
+const fake: () => Listing = () => {
+  return {
+    _id: new ObjectId(),
+    title: faker.lorem.words(faker.random.number({ min: 2, max: 6 })),
+    image: faker.image.imageUrl(),
+    address: `${faker.address.streetAddress()} ${faker.address.streetName()}, ${faker.address.zipCode()} ${faker.address.city()}`,
+    price: Number.parseInt(faker.finance.amount()),
+    numOfGuests: faker.random.number({ min: 1, max: 5 }),
+    numOfBeds: faker.random.number({ min: 1, max: 3 }),
+    numOfBaths: faker.random.number({ min: 1, max: 3 }),
+    rating: faker.random.number({ min: 1, max: 10 })
+  };
+};
+
+const args = process.argv.slice(2);
+if (args.length === 1) {
+  const fakes: Listing[] = [];
+  console.log(`Faking ${args[0]} items.`);
+  for (let i = 0; i < Number.parseInt(args[0]); i++) {
+    fakes.push(fake());
+  }
+  send(fakes);
+  console.log("[seed]: Finished");
+} else {
+  seed();
+}
