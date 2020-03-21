@@ -6,6 +6,8 @@ import { ApolloProvider } from "react-apollo";
 
 import { Listings } from "./sections";
 
+import "./styles/index.css";
+
 const apollo = new ApolloClient({
   // uri: "http://localhost:9000/api"
   uri: "/api"
@@ -13,7 +15,7 @@ const apollo = new ApolloClient({
 
 render(
   <ApolloProvider client={apollo}>
-    <Listings title="THouse Listings" />
+    <Listings title="Sone Kleenebok Listing" />
   </ApolloProvider>,
   document.getElementById("root")
 );

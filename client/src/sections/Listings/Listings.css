@@ -1,0 +1,8 @@
+.listings {
+  padding: 1rem;
+  max-width: 60rem;
+}
+
+.listings .listings__alert {
+  margin: 0 0 0.75rem 0;
+}

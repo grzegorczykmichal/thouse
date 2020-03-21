@@ -17,9 +17,9 @@ const mount = async (app: Application) => {
     })
   });
   apollo.applyMiddleware({ app, path: "/api" });
-  app.listen(process.env.APP_PORT);
+  app.listen(process.env.PORT);
   console.log(
-    `\u001b[31m[${APP_NAME}]\u001b[0m Listening on ${process.env.APP_PORT}`
+    `\u001b[31m[${APP_NAME}]\u001b[0m Listening on ${process.env.PORT}`
   );
 };
 
