@@ -1,5 +1,5 @@
 {
-  "name": "tiny-house",
+  "name": "sone-kleenebok-server",
   "version": "1.0.0",
   "dependencies": {
     "apollo-server-express": "^2.10.1",

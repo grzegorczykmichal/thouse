@@ -4,18 +4,35 @@ import * as serviceWorker from "./serviceWorker";
 import ApolloClient from "apollo-boost";
 import { ApolloProvider } from "react-apollo";
 
-import { Listings } from "./sections";
+import { Listings, Home, Host, Listing, NotFound, User } from "./sections";
 
 import "./styles/index.css";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 const apollo = new ApolloClient({
   // uri: "http://localhost:9000/api"
   uri: "/api"
 });
 
+const App = () => {
+  return (
+    <Router>
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route exact path="/host" component={Host} />
+        <Route exact path="/listing/:id" component={Listing} />
+        <Route exact path="/listings/:location?" component={Listings} />
+        <Route exact path="/user/:id" component={User} />
+        <Route component={NotFound} />
+      </Switch>
+    </Router>
+  );
+};
+
 render(
   <ApolloProvider client={apollo}>
-    <Listings title="Sone Kleenebok Listing" />
+    <App />
+    {/* <Listings title="Sone Kleenebok Listing" /> */}
   </ApolloProvider>,
   document.getElementById("root")
 );
